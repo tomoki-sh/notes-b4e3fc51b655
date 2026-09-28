@@ -1,0 +1,1212 @@
+/* ===== 1泊2日テーマ（海のリゾート） =====
+   ★このファイルは公開される。旅行先が分かる語を書かないこと（暗号化スキーム §6）。
+   生成り(kinari) #f4f1ea / 藍(ai) #123f63 / 朱(shu) #cf4f35 / 墨(sumi) #26292e
+   海の深い藍＋生成り。差し色は朱。モバイル優先・レスポンシブ
+   ※ --ai は「メインカラー」の意味（この旅行では文字どおり藍）
+     ★変数名はテーマ非依存。色の値だけを差し替え、名前は変えないこと（追補F-27）
+*/
+:root {
+  --kinari: #f4f1ea;
+  --kinari-2: #e9e4d8;
+  --ai: #123f63;      /* メイン＝深い海の藍 */
+  --ai-2: #2a6191;
+  --shu: #cf4f35;     /* 差し色＝鳥居・注連縄の朱 */
+  --shu-2: #e0664a;
+  --sumi: #26292e;
+  --gold: #b99a5f;    /* 光沢のある金 */
+  --cyan: #4b93a8;
+  --card: #fffdf8;
+  --line: #ddd8ca;
+  --muted: #7d8189;
+  --shadow: 0 4px 18px rgba(43, 42, 39, 0.10);
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: "Zen Kaku Gothic New", system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  color: var(--sumi);
+  background: var(--kinari);
+  /* 和紙風の薄い地紋 */
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(185,154,95,0.05) 0, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(18,63,99,0.05) 0, transparent 40%);
+  line-height: 1.7;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1, h2, h3, h4 { font-family: "Shippori Mincho", "Hiragino Mincho ProN", serif; font-weight: 700; }
+
+a { color: var(--ai); }
+
+.sync-status {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .8rem;
+  margin: 0 0 1rem; padding: .65rem .85rem; border: 1px solid var(--line);
+  border-radius: 8px; background: var(--card); color: var(--ai); font-size: .875rem;
+}
+.sync-status[data-state="error"], .sync-status[data-state="conflict"],
+.sync-status[data-state="offline"] { background: #fff2db; color: #703c13; border-color: #d2a46a; }
+.sync-status button { font: inherit; color: inherit; background: white; border: 1px solid currentColor; border-radius: 5px; padding: .35rem .6rem; cursor: pointer; }
+.sync-status button[hidden] { display: none; }
+
+/* ===== ヒーロー ===== */
+.hero {
+  /* ★写真を敷かない。CSS の url() は復号できないので、ここに現地の写真を置くと
+     解錠前に旅行先が分かってしまう（暗号化スキーム §5-2）。意匠だけで組む。 */
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(31,110,156,.55) 0%, rgba(18,63,99,0) 60%),
+    linear-gradient(165deg, #123f63 0%, #0e304c 52%, #26201e 100%);
+  color: var(--kinari);
+  position: relative;
+  overflow: hidden;
+  padding: 2.6rem 1.2rem 2.2rem;
+  text-align: center;
+}
+.hero::before {
+  /* 海面のうねりを思わせる横縞 */
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 22px, rgba(244,241,234,0.055) 22px 24px);
+  pointer-events: none;
+}
+.hero-inner { position: relative; max-width: 760px; margin: 0 auto; }
+.hero-emblem {
+  display: block; width: 72px; height: auto; margin: 0 auto .5rem;
+  filter: drop-shadow(0 5px 12px rgba(0,0,0,.4));
+  transform-origin: 50% 85%;
+  animation: boat-rock 5.2s ease-in-out infinite;
+}
+/* 波にゆられる小舟のような、ごく小さな上下（動きを減らす設定では停止） */
+@keyframes boat-rock {
+  0%, 100% { transform: translateY(0) rotate(-2.5deg); }
+  50%      { transform: translateY(-4px) rotate(2.5deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-emblem { animation: none; }
+}
+.hero-kicker {
+  letter-spacing: .35em; font-size: .72rem; margin: 0 0 .6rem;
+  color: #e3cf9f; text-indent: .35em;
+}
+.hero-title {
+  margin: 0; font-size: 2.4rem; letter-spacing: .12em;
+  text-shadow: 0 2px 12px rgba(0,0,0,.3);
+}
+.hero-title::after {
+  content: ""; display: block; width: 64px; height: 3px; margin: .7rem auto 0;
+  background: var(--shu-2); border-radius: 2px;
+}
+.hero-sub { margin: 1rem 0 .2rem; font-size: 1rem; opacity: .95; }
+.hero-note { margin: .2rem 0 0; font-size: .85rem; color: #d8cdb8; }
+
+/* ===== タブ ===== */
+.tabs {
+  display: flex; gap: .3rem; overflow-x: auto; padding: .5rem .6rem;
+  background: var(--ai-2);
+  position: sticky; top: 0; z-index: 50;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex: 0 0 auto; border: none; cursor: pointer;
+  background: transparent; color: #d9e2ea;
+  font: inherit; font-size: .88rem; font-weight: 500;
+  padding: .5rem .8rem; border-radius: 999px; white-space: nowrap;
+  transition: background .15s, color .15s;
+}
+.tab:hover { background: rgba(255,255,255,.12); }
+.tab.active { background: var(--kinari); color: var(--ai); font-weight: 700; }
+
+/* ===== レイアウト ===== */
+.container { max-width: 960px; margin: 0 auto; padding: 1.2rem 1rem 3rem; }
+.panel { display: none; animation: fade .25s ease; }
+.panel.active { display: block; }
+@keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.panel-title {
+  font-size: 1.5rem; margin: .2rem 0 .3rem; color: var(--ai);
+  border-left: 5px solid var(--shu); padding-left: .6rem;
+  display: flex; align-items: center; gap: .45rem;
+}
+.panel-title::after {
+  /* 見出しに意匠の小アクセント */
+  content: ""; width: 1.05em; height: 1.05em; flex: none;
+  background: url(images/emblem.svg) center/contain no-repeat;
+  opacity: .9;
+}
+.panel-lead { margin: 0 0 1.2rem; color: #5c554a; font-size: .92rem; }
+.muted { color: var(--muted); font-size: .85em; }
+
+/* ===== スケジュール ===== */
+.plan-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 1.1rem 1.1rem .6rem; margin-bottom: 1.1rem;
+}
+.plan-card.featured { border-color: var(--shu); border-width: 2px; }
+.plan-head { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .2rem; }
+.plan-head h3 { margin: 0; font-size: 1.15rem; color: var(--ai); }
+.plan-route { font-size: .85rem; color: #6a6356; margin: .1rem 0 .8rem; }
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline li {
+  display: grid; grid-template-columns: 58px 1fr; gap: .6rem;
+  padding: .5rem 0; border-top: 1px dashed var(--line);
+}
+.timeline li:first-child { border-top: none; }
+.tl-time { font-weight: 700; color: var(--shu); font-size: .9rem; }
+.tl-body { font-size: .92rem; }
+.tl-body .tl-sub { display: block; color: var(--muted); font-size: .82rem; }
+
+.tag {
+  display: inline-block; font-size: .72rem; font-weight: 700; padding: .12rem .5rem;
+  border-radius: 999px; vertical-align: middle;
+}
+.tag.top { background: var(--shu); color: #fff; }
+.tag.alt { background: #e7decb; color: #6a5d3c; }
+.tag.opt { background: #e0eef0; color: #1f7a7a; }
+.tag.user { background: var(--cyan); color: #fff; }
+/* 旅行期間中だけ「今日」の日カードを目立たせる。
+   本命プランの枠は朱（.featured）なので、今日は春慶塗の飴色で区別する */
+.tag.today { background: var(--gold); color: #fff; }
+.plan-card.is-today { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(176,135,62,.18), var(--shadow); }
+.plan-list { list-style: none; margin: 0; padding: 0; }
+.plan-list-tools { margin: .6rem 0 0; display: flex; gap: .4rem; flex-wrap: wrap; }
+.plan-actions { margin-left: auto; display: flex; gap: .3rem; flex-wrap: wrap; }
+.plan-del, .plan-copy, .plan-edit, .bp-restore, .bp-copy, .bp-del {
+  border: 1px solid var(--line); background: #fff; font: inherit; font-size: .74rem;
+  padding: .15rem .55rem; border-radius: 999px; cursor: pointer;
+}
+.plan-del, .bp-del { color: var(--shu); }
+.plan-del:hover, .bp-del:hover { background: #fbe3df; }
+.plan-copy, .bp-copy { color: var(--ai); }
+.plan-copy:hover, .bp-copy:hover { background: var(--kinari-2); }
+
+/* ===== 本命プラン / 予備プラン（★2026-08 追加） =====
+   本命は schedule そのもの、予備はその控え。どちらも .plan-card / .timeline で描く。 */
+.plan-section-head { display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; }
+.plan-section-head .sched-subhead { margin-bottom: .3rem; }
+.plan-section-head .muted { font-size: .8rem; }
+/* 「編集」は本命プランの主操作なので、他のピルより目立たせる */
+.plan-edit { margin-left: auto; color: #fff; background: var(--ai-2); border-color: var(--ai-2); font-weight: 700; }
+.plan-edit:hover { background: var(--ai); }
+.bp-restore { color: #fff; background: var(--shu); border-color: var(--shu); font-weight: 700; }
+.bp-restore:hover { background: #a63822; }
+/* 終了時刻は時刻の下に小さく（.tl-time は .timeline 側で朱・太字） */
+.tl-end { display: block; font-weight: 400; font-size: .78rem; color: var(--muted); }
+/* 予定行から地点カードへのリンク */
+/* 予定行に紐づいた地点。★本文からは読み取れないことが多いので必ず名前を出す
+   （例:「彦根 到着見込み」→ 彦根城）。この ref がマップのピン順を決めている。
+   ★行き先が2つあるので、1つのピルを区切って並べる。
+     別々のチップにすると無関係な2つに見え、くっつけると押し分けられない。 */
+.tl-links { display: inline-flex; align-items: stretch; margin-top: .25rem; max-width: 100%; }
+.tl-place, .tl-maps {
+  display: inline-flex; align-items: center; gap: .25rem;
+  font-size: .78rem; color: var(--ai); background: var(--kinari-2);
+  border: 1px solid var(--line); text-decoration: none;
+}
+.tl-place { border-radius: 999px 0 0 999px; padding: .1rem .5rem; border-right: none; min-width: 0; }
+/* ★指で押し分けられる幅を確保する。狭いと地点名を押すつもりで地図が開く */
+.tl-maps { border-radius: 0 999px 999px 0; padding: .1rem .6rem; min-width: 40px; justify-content: center; }
+.tl-place:hover { color: var(--shu); }
+.tl-maps:hover { background: var(--shu); border-color: var(--shu); }
+.timeline .st-chip { margin-left: .4rem; vertical-align: 1px; }
+
+.backup-plan { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: .6rem; }
+.backup-plan > summary { cursor: pointer; padding: .6rem .8rem; display: flex; align-items: center; gap: .5rem; font-weight: 700; color: var(--ai); }
+.backup-plan[open] > summary { border-bottom: 1px solid var(--line); }
+.backup-plan .bp-title { flex: 1; min-width: 0; }
+.backup-plan .plan-actions { padding: .6rem .8rem 0; margin-left: 0; }
+.backup-plan .plan-list { padding: .2rem .8rem .8rem; }
+
+/* 編集セクション。★編集モードのときだけ DOM が存在する（誤タップ防止。追補E） */
+.sched-editor.is-editing { border: 2px solid var(--ai-2); }
+.sched-edit-head { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.sched-edit-head .sched-subhead { margin: 0; flex: 1; min-width: 0; }
+/* 編集セクションは縦に長いので出口を末尾にも置く（先頭のボタンが画面外に出るため） */
+.sched-edit-foot { margin-top: .9rem; padding-top: .8rem; border-top: 1px solid var(--line); text-align: right; }
+.btn-primary { background: var(--ai-2); color: #fff; border: 1px solid var(--ai-2); border-radius: 999px; padding: .35rem .9rem; font: inherit; font-size: .84rem; font-weight: 700; cursor: pointer; }
+.btn-primary:hover { background: var(--ai); }
+
+.branch-grid { display: grid; gap: .7rem; grid-template-columns: 1fr; margin-top: .4rem; }
+.branch {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: .7rem .9rem;
+}
+.branch h4 { margin: 0 0 .3rem; font-size: .98rem; }
+.branch.sun h4 { color: #d98a1f; }
+.branch.rain h4 { color: var(--ai); }
+.branch.tired h4 { color: #8a6d9c; }
+.branch.fun h4 { color: var(--shu); }
+.branch p { margin: 0; font-size: .86rem; color: #5c554a; }
+
+/* ===== 編集できるスケジュール ===== */
+.sched-editor { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: .9rem; margin-bottom: 1.2rem; }
+/* ★地図を開いている間だけ、読み物用の 960px（.container）から外へ広げる。
+   大きいモニターで地図が小さいままにならないようにするため。
+   サイト全体の幅は変えない——他タブの行長とカードの列数は意図して 960px にしてある。
+   jsdom は var() を含む宣言を丸ごと捨てるので、この見た目はテストで担保できない（0-6）。 */
+@media (min-width: 1080px) {
+  .sched-editor.with-map {
+    /* 3rem 引くのは、100vw が縦スクロールバーの幅を含むため（引かないと横スクロールが出る） */
+    --editor-w: min(1900px, calc(100vw - 3rem));
+    width: var(--editor-w);
+    margin-left: calc((100% - var(--editor-w)) / 2);
+  }
+}
+.sched-legend { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .5rem; font-size: .8rem; color: #5c554a; margin-bottom: .7rem; }
+.sched-list { list-style: none; margin: 0 0 .7rem; padding: 0; display: flex; flex-direction: column; gap: .45rem; }
+/* ★行の組み立て: 上段＝時刻と操作、下段＝予定（つねに全幅）。
+   予定を時刻の横に並べると、画面幅に関係なく文字が途中で切れて読めない
+   （2カラム表示では予定欄が210px＝13字ほどしか入らなかった）。
+   order で予定を最後に回し、flex-basis:100% で必ず自分の行に落とす。
+   幅が足りなければ操作の一群だけがさらに段落ちするので、
+   メディアクエリなしでどの画面幅でも破綻しない。 */
+.sched-item {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .4rem;
+  background: var(--kinari); border: 1px solid var(--line); border-left: 4px solid #c9bfa9;
+  border-radius: 10px; padding: .45rem .55rem;
+}
+/* 📍／確定／✕ は一体で動かす。バラバラだと狭い画面で 📍 だけが取り残される */
+.sched-ctrl { display: flex; align-items: center; gap: .35rem; order: 5; margin-left: auto; }
+.sched-text { order: 10; flex: 1 0 100%; }
+.sched-item.confirmed { border-left-color: var(--shu); }
+.sched-handle { cursor: grab; color: var(--muted); font-size: 1.15rem; padding: 0 .15rem; touch-action: none; user-select: none; }
+
+/* ★時刻ゾーン: 「＋終了」1個の行と「〜 終了時刻 ×」3個の行で
+   グリッドの列数が変わってしまわないよう、まとめて1つの要素にしておく。 */
+.sched-when { display: flex; align-items: center; gap: .3rem; }
+
+/* 時刻と予定＝情報。太く濃くして、周りの操作ボタンより先に目に入るようにする */
+.sched-time, .sched-endtime {
+  width: 84px; border: 1px solid var(--line); border-radius: 7px; padding: .3rem .35rem;
+  font: inherit; font-size: .88rem; font-weight: 700; font-variant-numeric: tabular-nums;
+  background: #fff; color: var(--ai);
+}
+.sched-tilde { color: var(--muted); font-size: .85rem; }
+.sched-addend, .sched-rmend { border: 1px dashed var(--line); background: #fff; color: var(--muted); cursor: pointer; border-radius: 7px; font: inherit; font-size: .74rem; padding: .28rem .45rem; white-space: nowrap; }
+.sched-addend:hover, .sched-rmend:hover { border-color: var(--shu); color: var(--shu); }
+.sched-rmend { border-style: solid; padding: .28rem .5rem; font-weight: 700; }
+.sched-text {
+  min-width: 0; border: 1px solid var(--line); border-radius: 7px;
+  padding: .38rem .55rem; font: inherit; font-size: .95rem; font-weight: 600;
+  background: #fff; color: var(--sumi);
+}
+/* 空行の案内文まで太くしない */
+.sched-text::placeholder { font-weight: 400; color: var(--muted); }
+
+/* 紐づける地点。予定テキストの下に丸ごと1段。★これ1つで「いま何に紐づいているか」の
+   表示と、付け替え・解除を兼ねる。中身は区分ごとの optgroup（placeOptionGroups）。
+   時刻・予定より控えめにして、情報（時刻・予定）が先に目に入る順序を保つ。 */
+.sched-ref {
+  order: 20; flex: 1 0 100%; min-width: 0;
+  border: 1px solid var(--line); border-radius: 7px; padding: .3rem .45rem;
+  font: inherit; font-size: .8rem; background: #fff; color: var(--ai);
+}
+.sched-ref:hover { border-color: var(--ai-2); }
+
+/* 操作＝脇役。薄くしておき、触れたときだけはっきりさせる
+   （:focus-visible も戻さないとキーボード操作で見失う） */
+.sched-handle, .sched-addend, .sched-rmend, .sched-rm { opacity: .6; transition: opacity .12s; }
+.sched-item:hover .sched-handle,
+.sched-handle:hover, .sched-addend:hover, .sched-rmend:hover, .sched-rm:hover,
+.sched-handle:focus-visible, .sched-addend:focus-visible,
+.sched-rmend:focus-visible, .sched-rm:focus-visible { opacity: 1; }
+.sched-status { border: none; cursor: pointer; font-weight: 700; }
+.st-chip { font-size: .72rem; padding: .2rem .55rem; border-radius: 999px; line-height: 1; white-space: nowrap; }
+.st-chip.confirmed { background: var(--shu); color: #fff; }
+.st-chip.tentative { background: #e7decb; color: #6a5d3c; }
+.sched-rm { border: none; background: none; cursor: pointer; color: var(--shu); font-size: 1rem; width: 28px; height: 28px; border-radius: 50%; flex: 0 0 auto; }
+.sched-rm:hover { background: #fbe3df; }
+.sched-toolbar { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+.sched-select { border: 1px solid var(--line); border-radius: 999px; padding: .32rem .7rem; font: inherit; font-size: .8rem; background: #fff; color: var(--ai); max-width: 100%; }
+.sched-empty { color: var(--muted); font-size: .85rem; padding: .5rem; border: 1px dashed var(--line); border-radius: 10px; text-align: center; }
+.sched-subhead { color: var(--ai); font-size: 1.12rem; margin: 1.6rem 0 .6rem; border-left: 4px solid var(--gold); padding-left: .5rem; }
+
+/* 2カラム（タイムスケジュール ＋ 候補リスト） */
+.sched-cols { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+.sched-col-h { margin: 0 0 .5rem; font-size: .92rem; color: var(--ai); }
+.sched-col-h .muted { font-weight: 400; }
+/* 「地図で選ぶ」の開閉バー。★既定は閉じているので、スマホの編集画面に増えるのはこの1行だけ */
+.sched-map-bar { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .6rem; margin-bottom: .55rem; }
+.sched-map-hint { font-size: .75rem; }
+#sched-map-slot[hidden] { display: none; }
+
+/* ピンを予定へドラッグしているときの表示。★パソコンだけで起きる（app.js の pinDragEnabled）。
+   ゴーストは pointer-events:none にしないと、自分自身が落下先の判定を邪魔する。 */
+.pin-ghost {
+  position: fixed; z-index: 2000; pointer-events: none;
+  transform: translate(-50%, -160%);
+  background: var(--ai); color: #fff; font-size: .78rem; font-weight: 600;
+  padding: .3rem .6rem; border-radius: 999px; box-shadow: var(--shadow);
+  max-width: 20rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.pin-ghost.is-onto { background: var(--cyan); }
+/* ★ドラッグと確定したあとだけ範囲選択を止める。pointerdown では preventDefault
+   できない（Leaflet のクリック→ポップアップが死ぬ）ので、そのぶんブラウザの
+   既定のドラッグ選択が始まってしまう。最初から止めると本文をコピーできなくなる。 */
+body.pin-dragging, body.pin-dragging * { user-select: none; -webkit-user-select: none; }
+/* 落ちる場所の目印。行を挿し込まずクラスだけで出す（挿し込むと schedDropSlot() の数え方が狂う）。
+   線＝行と行の間に入る／枠＝その行に地点が紐づく。 */
+.sched-list > li.drop-before { box-shadow: inset 0 3px 0 0 var(--cyan); }
+.sched-list.drop-end { box-shadow: inset 0 -3px 0 0 var(--cyan); }
+.sched-list > li.drop-onto { outline: 2px solid var(--cyan); outline-offset: -2px; background: var(--kinari-2); }
+/* ピンから予定行へ飛んだときの目印（すぐ消える） */
+.sched-list > li.is-flash { background: var(--kinari-2); }
+.sched-cand-tabs { display: flex; flex-wrap: wrap; gap: .3rem; margin-bottom: .55rem; }
+.sched-cand-tab { border: 1px solid var(--line); background: var(--card); color: var(--ai); font: inherit; font-size: .78rem; padding: .26rem .62rem; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+.sched-cand-tab:hover { background: var(--kinari-2); }
+.sched-cand-tab.active { background: var(--ai); color: #fff; border-color: var(--ai); font-weight: 700; }
+
+/* ===== 日帰りのときは「日」のUIを畳む（★app.js が <body> に day-single を付ける） =====
+   DOM も配線もそのまま残し、見た目だけ隠す。1日しかないのに「全体／8/16」の
+   サブタブと日付見出しが出ると、意味のない操作と情報を増やすだけなので。
+   マップの「日」フィルタ列は MAP_FILTER_COLUMNS 側で落としている。
+   複数日の旅行では TRIP_DAYS に行を足せば自動で復活する。 */
+body.day-single .sched-day-tabs,
+body.day-single .sched-list .sched-day-head { display: none; }
+
+/* ===== 日別サブタブ（★4泊5日対応） ===== */
+.sched-day-tabs {
+  display: flex; flex-wrap: wrap; gap: .35rem;
+  margin: 0 0 .8rem; padding-bottom: .7rem;
+  border-bottom: 1px dashed var(--line);
+}
+.sched-day-tab {
+  border: 1px solid var(--line); background: var(--card); color: var(--ai);
+  font: inherit; font-size: .84rem; font-weight: 500;
+  padding: .34rem .72rem; border-radius: 999px; cursor: pointer; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: .3rem;
+}
+.sched-day-tab:hover { background: var(--kinari-2); }
+.sched-day-tab.active {
+  background: var(--ai); color: #fff; border-color: var(--ai); font-weight: 700;
+  box-shadow: 0 2px 8px rgba(47,79,62,.28);
+}
+.sched-day-tab .chip-n {
+  font-size: .7rem; background: var(--kinari-2); color: var(--ai);
+  border-radius: 999px; padding: 0 .4rem; min-width: 1.5em; text-align: center;
+}
+.sched-day-tab.active .chip-n { background: rgba(255,255,255,.22); color: #fff; }
+
+/* 全体表示に挟む日付の見出し行（ドラッグ対象外＝日の境界になる） */
+.sched-day-head {
+  list-style: none;
+  display: flex; align-items: center; gap: .55rem;
+  margin: .9rem 0 .35rem; padding: 0;
+  font-family: "Shippori Mincho", "Hiragino Mincho ProN", serif;
+  color: var(--ai); font-weight: 700; font-size: .95rem;
+}
+.sched-day-head:first-child { margin-top: 0; }
+.sched-day-rule { flex: 1; height: 1px; background: var(--line); }
+.sched-day-name { flex: none; letter-spacing: .04em; }
+.sched-day-sub { flex: none; font-family: inherit; font-size: .74rem; font-weight: 400; color: var(--muted); }
+@media (max-width: 560px) {
+  .sched-day-sub { display: none; }
+}
+
+.sched-hint { margin: .6rem 0 0; font-size: .78rem; line-height: 1.6; }
+.sched-cand-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .35rem; max-height: 460px; overflow-y: auto; }
+.sched-cand-head { font-size: .76rem; font-weight: 700; color: var(--ai); padding: .35rem .2rem .1rem; position: sticky; top: 0; background: var(--card); }
+.sched-cand-item {
+  display: flex; align-items: center; gap: .5rem; background: var(--kinari);
+  border: 1px solid var(--line); border-radius: 10px; padding: .4rem .55rem;
+  font-size: .86rem; cursor: grab;
+}
+.sched-cand-item .type-emoji { font-size: 1rem; }
+.sched-cand-item .nm { flex: 1; min-width: 0; }
+.sched-cand-item .cand-add { border: none; background: none; cursor: pointer; color: var(--cyan); font-size: 1rem; width: 26px; height: 26px; border-radius: 50%; flex: 0 0 auto; }
+.sched-cand-item .cand-add:hover { background: #def0f0; }
+@media (min-width: 760px) { .sched-cols { grid-template-columns: 1.5fr 1fr; align-items: start; } }
+/* 地図を開いているときの並び。★地図と予定一覧が同時に見えていないとドラッグできない（追補M）。
+   #sched-map-slot は閉じているとき hidden＝display:none なので、
+   そのときのグリッドは上の既定（1.5fr 1fr）のまま変わらない。 */
+@media (min-width: 760px) {
+  .sched-cols.with-map { grid-template-columns: 1fr 1fr; }         /* 地図 ｜ 予定（候補は次の行） */
+  .sched-cols.with-map .sched-list { max-height: 480px; overflow-y: auto; }
+}
+/* 地図の高さと足並みをそろえる（下の #map-dock.in-editor #map と対） */
+@media (min-height: 900px) { .sched-cols.with-map .sched-list { max-height: 640px; } }
+/* 地図 ｜ 予定 ｜ 候補。★地図に多めに割り当てる。均等にすると、3カラムへ切り替わった
+   とたんに地図が2カラムのときより狭くなる（1512px で実測 474px < 1080px の 492px）。
+   候補リストは店名が並ぶだけなので狭くてよい。 */
+@media (min-width: 1180px) {
+  .sched-cols.with-map { grid-template-columns: 1.35fr 1.15fr .75fr; }
+}
+
+/* 列の間の16pxは操作用のトラック。候補が下段へ回る場合も行・列を明示する。 */
+.sched-editor [hidden] { display: none !important; }
+.sched-cols > * { min-width: 0; }
+#sched-timeline-col { container-type: inline-size; container-name: sched-timeline; }
+/* 狭い列では、日付の補足を次の行へ送って横スクロールを防ぐ。 */
+@container sched-timeline (max-width: 320px) {
+  .sched-day-head { flex-wrap: wrap; row-gap: .2rem; }
+  .sched-day-sub { order: 1; flex: 1 0 100%; min-width: 0; overflow-wrap: anywhere; }
+}
+.sched-editor[data-layout] .sched-cols { column-gap: 0; row-gap: 1rem; }
+.sched-editor[data-layout="phone"] .sched-cols { grid-template-columns: minmax(0, 1fr); }
+.sched-editor[data-layout="three"] #sched-map-slot,
+.sched-editor[data-layout="mapSchedule"] #sched-map-slot { grid-area: 1 / 1; }
+.sched-editor[data-layout="three"] #sched-timeline-col,
+.sched-editor[data-layout="mapSchedule"] #sched-timeline-col { grid-area: 1 / 3; }
+.sched-editor[data-layout="three"] #sched-candidates-col { grid-area: 1 / 5; }
+.sched-editor[data-layout="mapSchedule"] #sched-candidates-col { grid-area: 2 / 1 / auto / 4; }
+.sched-editor[data-layout="scheduleCandidates"] #sched-timeline-col { grid-area: 1 / 1; }
+.sched-editor[data-layout="scheduleCandidates"] #sched-candidates-col { grid-area: 1 / 3; }
+.sched-splitter { grid-area: 1 / 2; align-self: stretch; position: relative; min-height: 80px;
+  cursor: col-resize; touch-action: none; user-select: none; border-radius: 6px; }
+.sched-editor[data-layout="three"] .sched-splitter[data-pane="schedule"] { grid-column: 4; }
+.sched-splitter::before { content: ""; position: absolute; top: 0; bottom: 0; left: 7px; width: 2px; background: var(--line); }
+.sched-splitter::after { content: "⋮"; position: absolute; top: 36px; left: 0; width: 16px; text-align: center;
+  color: var(--ai); background: var(--card); font-size: 22px; line-height: 36px; border-radius: 6px; }
+.sched-splitter:hover, .sched-splitter:focus-visible { background: var(--kinari-2); outline: 2px solid var(--cyan); outline-offset: -2px; }
+body.sched-resizing, body.sched-resizing * { cursor: col-resize !important; user-select: none !important; -webkit-user-select: none !important; }
+.sched-layout-bar { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem .7rem; margin-bottom: .7rem; }
+.sched-layout-bar .sched-hint { margin: 0; }
+.sched-candidates-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .4rem; margin-bottom: .5rem; }
+.sched-candidates-head .sched-col-h { margin: 0; }
+#sched-candidates-body > .sched-hint { margin: 0 0 .5rem; }
+.sched-editor[data-layout="phone"] .sched-layout-bar { display: none; }
+.sched-editor[data-layout="phone"] #sched-candidates-col { border-top: 1px solid var(--line); padding-top: .7rem; }
+.sched-editor[data-layout="phone"] .sched-list { max-height: none; overflow: visible; }
+.sched-editor[data-layout="phone"] #sched-map-toggle,
+.sched-editor[data-layout="phone"] #sched-map-size,
+.sched-editor[data-layout="phone"] #sched-candidates-toggle { min-height: 44px; }
+.sched-editor[data-layout="phone"] .cand-add { width: 44px; height: 44px; }
+.sched-editor[data-layout="phone"] .sched-cand-item { cursor: default; }
+
+/* ===== カード ===== */
+.cards { display: grid; gap: 1.1rem; grid-template-columns: 1fr; }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column;
+  /* ★タブナビが position:sticky なので、一覧表から飛んだときにナビの下へ潜らないよう逃がす */
+  scroll-margin-top: 64px;
+}
+/* 一覧表から飛んできたカードを一瞬だけ光らせる（どこに着いたかを分かるように） */
+.card.just-jumped { animation: card-jump 1.6s ease-out; }
+@keyframes card-jump {
+  0%   { box-shadow: 0 0 0 3px var(--shu), var(--shadow); }
+  70%  { box-shadow: 0 0 0 3px var(--shu), var(--shadow); }
+  100% { box-shadow: 0 0 0 0 rgba(193,67,43,0), var(--shadow); }
+}
+@media (prefers-reduced-motion: reduce) { .card.just-jumped { animation: none; } }
+.card-imgwrap { position: relative; background: var(--kinari-2); }
+.card-img {
+  width: 100%; aspect-ratio: 16/10; object-fit: cover; display: block;
+  cursor: zoom-in; border: none; padding: 0; background: none;
+}
+.card-noimg {
+  width: 100%; aspect-ratio: 16/10; display: flex; align-items: center; justify-content: center;
+  color: var(--muted); font-size: 2.4rem; background: var(--kinari-2);
+}
+.card-thumbs { display: flex; gap: .35rem; padding: .4rem .5rem 0; }
+.thumb {
+  width: 52px; height: 40px; object-fit: cover; border-radius: 6px; cursor: zoom-in;
+  border: 1px solid var(--line); padding: 0; background: none;
+}
+.cat-ribbon {
+  position: absolute; top: .6rem; left: 0; font-size: .72rem; font-weight: 700;
+  color: #fff; padding: .18rem .7rem .18rem .55rem; border-radius: 0 6px 6px 0;
+  border: none; cursor: pointer; font-family: inherit; box-shadow: var(--shadow);
+}
+.cat-ribbon.status-confirmed { background: var(--shu); }     /* 確定＝朱 */
+.cat-ribbon.status-tentative { background: var(--muted); }   /* 未確定＝グレー */
+.cat-ribbon:hover { filter: brightness(1.08); }
+.cat-ribbon:active { transform: translateY(1px); }
+.sched-linked { font-size: .8rem; opacity: .7; margin: 0 .1rem; }
+
+.card-body { padding: .7rem .9rem 1rem; display: flex; flex-direction: column; gap: .5rem; }
+.card-title { margin: 0; font-size: 1.12rem; color: var(--ai); }
+.card-sub { display: flex; align-items: center; flex-wrap: wrap; gap: .35rem .5rem; }
+.card-area { font-size: .8rem; color: #7a6f5c; }
+.card-area::before { content: "📍 "; }
+/* ジャンル（イタリアン・そうめん等）を一目で分かるように */
+.genre-chip {
+  flex: none; font-size: .76rem; font-weight: 700; line-height: 1.5;
+  padding: .1rem .55rem; border-radius: 999px;
+  background: var(--ai); color: var(--kinari);
+  letter-spacing: .02em; white-space: nowrap;
+}
+.popup-card .p-genre {
+  display: inline-block; font-size: .72rem; font-weight: 700;
+  padding: .05rem .45rem; border-radius: 999px;
+  background: var(--ai); color: var(--kinari); margin-bottom: .2rem;
+}
+.badges { display: flex; flex-wrap: wrap; gap: .3rem; }
+.badge { font-size: .7rem; font-weight: 700; padding: .12rem .5rem; border-radius: 999px; }
+.priority-top { background: var(--shu); color: #fff; }
+.priority-alt { background: #e7decb; color: #6a5d3c; }
+.priority-warn { background: #fbe3df; color: #b23121; }
+
+.ratings { display: flex; flex-wrap: wrap; gap: .4rem; }
+.rating-chip {
+  font-size: .76rem; font-weight: 700; padding: .12rem .55rem; border-radius: 999px;
+  background: var(--kinari-2); border: 1px solid var(--line); color: #6a5d3c;
+}
+.rating-chip.tabelog { color: #b23121; }
+.rating-chip.google { color: #2c6cc9; }
+/* 点数チップをタップすると出典（食べログ／Googleマップ）へ飛ぶ */
+.rating-chip.is-link { text-decoration: none; cursor: pointer; transition: filter .15s, transform .1s; }
+.rating-chip.is-link::after { content: " ↗"; font-size: .8em; opacity: .55; }
+.rating-chip.is-link:hover { filter: brightness(.9); }
+.rating-chip.is-link:active { transform: scale(.97); }
+
+.card-desc { font-size: .9rem; color: #4d473d; margin: 0; }
+.card-meta { list-style: none; margin: 0; padding: 0; font-size: .82rem; color: #5c554a; }
+.card-meta li { display: flex; gap: .5rem; padding: .1rem 0; }
+.card-meta b { color: var(--ai); flex: 0 0 5.5em; }
+.card-notes {
+  font-size: .82rem; background: #fbf4e6; border-left: 3px solid var(--gold);
+  padding: .4rem .6rem; border-radius: 0 6px 6px 0; color: #6a5d3c;
+}
+.card-links { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .2rem; }
+.pill {
+  display: inline-flex; align-items: center; gap: .25rem; text-decoration: none;
+  font-size: .8rem; font-weight: 600; padding: .35rem .75rem; border-radius: 999px;
+  background: var(--ai); color: #fff; transition: opacity .15s, transform .1s;
+}
+.pill:hover { opacity: .88; }
+.pill:active { transform: scale(.97); }
+.pill.maps { background: var(--shu); }
+.pill.tabelog { background: #6a5d3c; }
+/* ★クラス名は add-sched。add-route は旧名で、当たらないまま残っていた（2026-09 に修正） */
+.pill.add-sched { background: var(--cyan); border: none; cursor: pointer; font: inherit; font-weight: 600; }
+.pill.ticket { background: var(--gold); border: none; cursor: pointer; font: inherit; font-weight: 600; }
+
+/* ===== マップ ===== */
+#map { height: 60vh; min-height: 360px; border-radius: var(--radius); border: 1px solid var(--line); box-shadow: var(--shadow); margin-bottom: 1rem; }
+/* ★編集モードへ間借りしているときの地図。#map の派生なので隣に並べる（追補F-19）。
+   高さを vh から px へ変えるのが要点: Leaflet は window の resize を掴んで
+   invalidateSize() → 地図をパンさせる。編集セクションは入力欄だらけで、
+   スマホのソフトキーボードが resize を撃つため、vh のままだと入力中に地図が動く。
+   打ち消したい min-height / margin も明示的に書く。 */
+#map-dock.in-editor #map { height: 420px; min-height: 0; margin-bottom: 0; }
+/* 縦に余裕のある画面ではもう少し高く。★vh ではなく px の段階指定にする理由は追補F-26-3
+   （vh だとソフトキーボードの resize のたびに Leaflet が地図をパンさせる） */
+@media (min-height: 900px) { #map-dock.in-editor #map { height: 560px; } }
+/* ★間借り中はフィルタを低くする。マップタブと同じ高さのまま出すと、
+   狭い列ではチップが折り返して500px近くになり、地図が画面の外へ押し出される。
+   件数バッジは見出し行にあるので、畳んでも「何地点出ているか」は分かる。 */
+#map-dock.in-editor .map-filters { max-height: 168px; overflow-y: auto; margin-bottom: .5rem; font-size: .95em; }
+/* 狭い画面では地図が予定一覧の上に積まれるので、低めにして一覧を押し下げすぎない */
+@media (max-width: 759px) { #map-dock.in-editor #map { height: 300px; } }
+.sched-editor[data-layout="phone"] #map-dock.in-editor #map { height: 300px; }
+.sched-editor[data-layout="phone"].map-large #map-dock.in-editor #map { height: 480px; }
+.sched-editor[data-layout="phone"] #map-dock [data-add-sched] { min-width: 44px; min-height: 44px; }
+.filter-label { font-size: .78rem; font-weight: 700; color: var(--ai); }
+.chip {
+  display: inline-flex; align-items: center; gap: .25rem; font-size: .8rem;
+  background: var(--card); border: 1px solid var(--line); padding: .25rem .6rem;
+  border-radius: 999px; cursor: pointer; user-select: none;
+}
+.chip input { accent-color: var(--shu); }
+.chip-n {
+  margin-left: .3rem; font-size: .72em; font-weight: 700; color: var(--muted);
+  background: var(--kinari-2); border-radius: 999px; padding: 0 .35em;
+}
+.chip:has(input:not(:checked)) { opacity: .5; }
+
+/* ===== 絞り込みツールバー（カードのタブ・マップ共通） =====
+   ゾーン（種類／犬／ジャンル／並び替え／日／状態／ルート）を1本ずつ積み、
+   各ゾーンを「ラベル列 | チップ列」の2列グリッドにする。
+   ★チップを .chip-row で包んでグリッドの右カラムに入れるのが要点。
+     flex-wrap のままだと折り返したチップがラベルの真下に回り込み、
+     どこからどこまでが1ゾーンなのか分からなくなる。 */
+.card-tools, .map-filters {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: var(--shadow); overflow: hidden;   /* 角丸から罫線がはみ出さない */
+  padding: 0; margin-bottom: 1rem;
+}
+.tools-head {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .45rem .7rem;
+  background: var(--kinari-2); border-bottom: 1px solid var(--line);
+}
+.tools-title { font-size: .78rem; font-weight: 700; color: var(--ai); letter-spacing: .04em; }
+.tools-head .card-tool-count, .tools-head .map-filter-count { margin-left: auto; }
+
+.card-tools .filter-group, .map-filters .filter-group {
+  display: grid; grid-template-columns: 5em minmax(0, 1fr); gap: 0;
+  /* ★下の汎用 .filter-group が align-items:center を持つので明示的に打ち消す。
+     stretch にしないとラベル列の背景と縦罫線が文字の高さぶんしか伸びず、
+     列の区切りが途切れて見える。 */
+  align-items: stretch;
+}
+/* 見出し行の下線があるので、2本目以降のゾーンにだけ区切り線を引く */
+.card-tools .filter-group + .filter-group,
+.map-filters .filter-group + .filter-group { border-top: 1px solid var(--line); }
+
+.card-tools .filter-label, .map-filters .filter-label {
+  display: flex; align-items: center;   /* 箱は全高に伸ばしつつ、文字は縦中央に置く */
+  padding: .5rem .6rem; margin: 0;
+  background: var(--kinari); border-right: 1px solid var(--line);
+}
+.chip-row { display: flex; flex-wrap: wrap; gap: .35rem; padding: .5rem .6rem; }
+
+/* ツールバーの外に .filter-group を置いたとき用のフォールバック（現状は該当なし） */
+.filter-group { display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; }
+
+.card-tool-sort {
+  font: inherit; font-size: .8rem; color: var(--sumi);
+  border: 1px solid var(--line); border-radius: 999px; padding: .28rem .6rem;
+  background: #fff; max-width: 100%;
+}
+.card-tool-sort:focus { outline: 2px solid var(--ai-2); outline-offset: 1px; }
+.card-tool-all { font-size: .76rem; padding: .22rem .6rem; flex: none; }
+.card-tool-count, .map-filter-count { white-space: nowrap; }
+@media (max-width: 520px) {
+  .card-tools .filter-group, .map-filters .filter-group { grid-template-columns: 4.4em 1fr; }
+  .card-tools .filter-label, .map-filters .filter-label { padding: .45rem .4rem; }
+  .chip-row { padding: .45rem .5rem; }
+  .card-tool-sort { width: 100%; }
+}
+
+/* Leaflet pin */
+.pin {
+  width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,.35); border: 2px solid #fff;
+  position: relative;
+}
+.pin span { transform: rotate(45deg); font-size: 15px; line-height: 1; }
+.pin.ring-confirmed { box-shadow: 0 0 0 3px rgba(217,84,47,.55), 0 2px 6px rgba(0,0,0,.35); }
+.pin.ring-warning { box-shadow: 0 0 0 3px rgba(192,57,43,.6), 0 2px 6px rgba(0,0,0,.35); }
+.pin.ring-route { box-shadow: 0 0 0 3px rgba(31,156,156,.7), 0 2px 6px rgba(0,0,0,.35); }
+/* 予定の行にポインタを乗せたときの相方。★ring より後ろに書いて box-shadow を勝たせる */
+.pin.is-focus { box-shadow: 0 0 0 5px rgba(31,156,156,.9), 0 4px 10px rgba(0,0,0,.4); z-index: 1000; }
+/* ドラッグの持ち手であることを見せる（パソコンのみ。タッチ端末では掴めない） */
+@media (hover: hover) and (pointer: fine) { .pin { cursor: grab; } .pin:active { cursor: grabbing; } }
+.pin-num {
+  position: absolute; top: -10px; right: -10px; transform: rotate(45deg);
+  background: var(--cyan); color: #fff; font-size: 11px; font-weight: 700;
+  width: 19px; height: 19px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  border: 2px solid #fff;
+}
+.pin-spot { background: #3e9e5a; }
+.pin-restaurant { background: #e08a2b; }
+.pin-cafe { background: #8a5fb0; }
+/* ピンの下に出す点数・行きたい度のタグ（マップの「ピンに表示」列＝pinlabel）。
+   ★.pin の「子」ではなく「兄弟」。.pin は rotate(-45deg) の雫形なので、中に入れると
+     文字が斜めになり .pin span / .pin-num のように逆回転を足すことになる。兄弟なら要らない。
+   ★位置の基準は Leaflet のマーカー要素（.leaflet-marker-icon は position:absolute ＝
+     positioned なので、子の absolute はそこに解決される。こちらで基準を作る必要はない）。
+   ★white-space:nowrap は飾りではない。absolute の幅は包含ブロック（30px）に合わせて
+     縮むので、外すと「⭐4.4」が数文字ごとに折り返す。
+   ★pointer-events:none。ピンは地図から予定へドラッグする持ち手なので、
+     タグが当たり判定を奪うと掴めなくなる（追補M）。 */
+.pin-tag {
+  position: absolute; top: 32px; left: 50%; transform: translateX(-50%);
+  white-space: nowrap; pointer-events: none;
+  font-size: 10px; line-height: 1.3; padding: 1px 5px; border-radius: 999px;
+  background: rgba(255,255,255,.92); border: 1px solid var(--line);
+  box-shadow: 0 1px 3px rgba(0,0,0,.25); color: #4d473d;
+}
+/* 地点名だけ幅を制限して「…」で省略する。
+   ★制限を .pin-tag 全体にかけないこと——名前の長い地点で後ろの点数・★まで切り落とされる
+     （このデータでいちばん長い地点名は21文字あり、点数も持っている）。
+     長さが決まっていないのは名前だけなので、制限もここに閉じ込める。
+     ★この設計は CSS では検査できないので、tools/test_days.js §8d の
+       「名前が長い地点でも点数が残る」が唯一の砦になっている。
+   ★vertical-align は要る。overflow:hidden の inline-block はベースラインが下端に変わるため、
+     付けないと隣の「⭐4.4」と行がずれて、ピルが縦に伸びる。 */
+.pin-name {
+  display: inline-block; max-width: 120px;
+  overflow: hidden; text-overflow: ellipsis; vertical-align: bottom;
+}
+
+.popup-card { width: 190px; }
+.popup-card img { width: 100%; height: 96px; object-fit: cover; border-radius: 6px; }
+.popup-card h4 { margin: .4rem 0 .15rem; font-size: .95rem; }
+.popup-card .p-area { font-size: .74rem; color: #7a6f5c; }
+.popup-card .p-desc { font-size: .78rem; color: #4d473d; margin: .3rem 0; }
+.popup-card .p-actions { display: flex; gap: .35rem; flex-wrap: wrap; }
+.popup-card .p-btn {
+  font-size: .74rem; font-weight: 600; padding: .25rem .5rem; border-radius: 999px;
+  text-decoration: none; cursor: pointer; border: none; font-family: inherit;
+}
+.p-btn.add { background: var(--cyan); color: #fff; }
+.p-btn.maps { background: var(--shu); color: #fff; }
+
+/* ===== ルート編集 ===== */
+.route-editor { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1rem; }
+.route-editor-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .5rem; margin-bottom: .6rem; }
+.route-editor-head h3 { margin: 0; color: var(--ai); font-size: 1.1rem; }
+.route-actions { display: flex; gap: .4rem; flex-wrap: wrap; }
+.btn-ghost { background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: .3rem .7rem; font: inherit; font-size: .8rem; cursor: pointer; color: var(--ai); }
+.btn-ghost:hover { background: var(--kinari-2); }
+.btn-gmaps { background: var(--ai-2); color: #fff; border-color: var(--ai-2); text-decoration: none; }
+.btn-gmaps:hover { background: var(--ai); }
+.btn-gmaps.disabled { opacity: .45; pointer-events: none; }
+/* 経由地が多すぎる警告。★.btn-gmaps は「深緑の塗り＋白文字」なので、
+   文字色だけ朱にすると深緑の上の朱文字になって読めない（実際にそうなっていた）。
+   塗りごと朱に替える（白文字のまま。朱#c1432b × 白 = 5.1:1 で WCAG AA を満たす）。
+   ★.btn-gmaps の規則はこのブロックにまとめる。離れた行に書くと今回の取り違えが起きる。 */
+.btn-gmaps.too-many { background: var(--shu); border-color: var(--shu); color: #fff; }
+.btn-gmaps.too-many:hover { background: #a63822; }
+/* 回る順番。★閲覧専用（スケジュールから作られる導出値なので、ここでは編集させない） */
+.route-note { font-size: .8rem; margin: 0 0 .6rem; }
+.route-list { list-style: none; margin: 0; padding: 0; min-height: 48px; display: flex; flex-direction: column; gap: .35rem; counter-reset: r; }
+.route-item {
+  display: flex; align-items: center; gap: .5rem; background: var(--kinari);
+  border: 1px solid var(--line); border-radius: 10px; padding: .45rem .6rem; font-size: .86rem;
+}
+.route-item .num { counter-increment: r; }
+.route-item .num::before { content: counter(r); background: var(--cyan); color: #fff; font-size: .72rem; font-weight: 700; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
+.route-item .type-emoji { font-size: 1rem; }
+.route-item .nm { flex: 1; }
+.route-empty { color: var(--muted); font-size: .84rem; padding: .5rem; }
+.sortable-ghost { opacity: .4; }
+.sortable-chosen { box-shadow: 0 0 0 2px var(--cyan); }
+
+/* ===== ルートタブ ===== */
+.leg {
+  display: grid; grid-template-columns: 1fr auto; gap: .5rem; align-items: center;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: .7rem .9rem; margin-bottom: .6rem; box-shadow: var(--shadow);
+}
+.leg .leg-route { font-size: .95rem; }
+.leg .leg-route b { color: var(--ai); }
+.leg .leg-arrow { color: var(--shu); margin: 0 .3rem; }
+.leg .leg-time { font-weight: 700; color: var(--shu); white-space: nowrap; font-size: .9rem; }
+.leg .leg-note { grid-column: 1 / -1; font-size: .8rem; color: var(--muted); }
+
+/* ===== 持ち物 ===== */
+.pack-group { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: .8rem 1rem; margin-bottom: .8rem; box-shadow: var(--shadow); }
+.pack-group h3 { margin: 0 0 .5rem; font-size: 1rem; color: var(--ai); }
+.pack-list { list-style: none; margin: 0; padding: 0; }
+.pack-list li { padding: .25rem 0; }
+.pack-list label { display: flex; align-items: center; gap: .55rem; cursor: pointer; font-size: .92rem; }
+.pack-list input { width: 19px; height: 19px; accent-color: var(--shu); }
+.pack-list input:checked + span { text-decoration: line-through; color: var(--muted); }
+
+/* ===== 天気 ===== */
+.weather-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: .6rem; }
+/* 出典と降水確率の定義の注記。グリッドの全幅を使う */
+.wx-note { grid-column: 1 / -1; margin: .2rem 0 0; font-size: .78rem; line-height: 1.6; }
+.wx-day { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: .6rem .4rem; text-align: center; box-shadow: var(--shadow); }
+.wx-day.is-trip { border-color: var(--shu); border-width: 2px; }
+.wx-dow { font-size: .8rem; font-weight: 700; color: var(--ai); }
+.wx-date { font-size: .72rem; color: var(--muted); }
+.wx-icon { font-size: 1.8rem; margin: .2rem 0; }
+.wx-temp { font-size: .82rem; }
+.wx-temp .hi { color: var(--shu); font-weight: 700; }
+.wx-temp .lo { color: var(--ai); }
+.wx-pop { font-size: .72rem; color: #2c6cc9; }
+.weather-alert { margin-top: 1rem; }
+.alert-box { background: #fbe3df; border: 1px solid #e8b3a8; border-radius: 10px; padding: .7rem .9rem; color: #9c2c1c; font-size: .88rem; }
+.alert-box.ok { background: #e6f3ec; border-color: #b6dcc4; color: #2f7a4d; }
+
+/* ===== 注意 ===== */
+.info-card { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 0 12px 12px 0; padding: .8rem 1rem; margin-bottom: .7rem; box-shadow: var(--shadow); }
+.info-card h3 { margin: 0 0 .3rem; font-size: 1rem; color: var(--ai); }
+.info-card p { margin: 0; font-size: .88rem; color: #4d473d; }
+.info-card.warn { border-left-color: var(--shu); }
+.info-card p code { background: var(--kinari-2); padding: .05em .35em; border-radius: 4px; font-size: .92em; }
+
+/* ===== 注意タブの編集モード ===== */
+.info-toolbar { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin: 0 0 .9rem; }
+.info-toolbar .edit-only { display: none; gap: .4rem; flex-wrap: wrap; }
+#panel-info.editing .info-toolbar .edit-only { display: flex; }
+#info-edit-toggle.on { background: var(--ai); color: #fff; border-color: var(--ai); }
+/* 編集中は「今は書き換わる状態」だと一目で分かるようにする */
+#panel-info.editing #info-content { outline: 2px dashed var(--ai-2); outline-offset: 8px; border-radius: 4px; }
+
+.info-card.edit { padding: .6rem .7rem; }
+.info-edit-head { display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; margin-bottom: .45rem; }
+.info-handle { cursor: grab; color: var(--muted); font-size: 1.15rem; padding: 0 .2rem; touch-action: none; user-select: none; }
+.info-title {
+  flex: 1 1 12rem; min-width: 0; font: inherit; font-family: "Shippori Mincho", serif; font-weight: 700;
+  font-size: 1rem; color: var(--ai); border: 1px solid var(--line); border-radius: 8px; padding: .3rem .5rem; background: #fff;
+}
+.info-text {
+  width: 100%; font: inherit; font-size: .88rem; color: #4d473d; line-height: 1.6;
+  border: 1px solid var(--line); border-radius: 8px; padding: .45rem .55rem; background: #fff; resize: vertical;
+}
+.info-title:focus, .info-text:focus { outline: 2px solid var(--ai-2); outline-offset: 1px; border-color: var(--ai-2); }
+.info-warn, .info-del {
+  flex: none; border: 1px solid var(--line); background: #fff; font: inherit; font-size: .74rem;
+  padding: .22rem .6rem; border-radius: 999px; cursor: pointer; color: var(--muted);
+}
+.info-warn.on { background: #fbe3df; color: #b23121; border-color: #f0c7c0; font-weight: 700; }
+.info-del { color: var(--shu); }
+.info-del:hover { background: #fbe3df; }
+
+@media (max-width: 480px) {
+  .info-title { flex: 1 1 100%; order: -1; }
+}
+
+/* ===== ライトボックス ===== */
+.lightbox {
+  position: fixed; inset: 0; z-index: 1000; background: rgba(20,18,15,.92);
+  display: flex; align-items: center; justify-content: center;
+}
+.lightbox.hidden { display: none; }
+.lb-img { max-width: 92vw; max-height: 82vh; border-radius: 8px; box-shadow: 0 8px 40px rgba(0,0,0,.6); }
+.lb-close, .lb-prev, .lb-next {
+  position: absolute; background: rgba(255,255,255,.12); color: #fff; border: none;
+  cursor: pointer; border-radius: 50%; width: 46px; height: 46px; font-size: 1.6rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.lb-close { top: 1rem; right: 1rem; font-size: 1.2rem; }
+.lb-prev { left: 1rem; top: 50%; transform: translateY(-50%); }
+.lb-next { right: 1rem; top: 50%; transform: translateY(-50%); }
+.lb-close:hover, .lb-prev:hover, .lb-next:hover { background: rgba(255,255,255,.25); }
+.lb-counter { position: absolute; bottom: 1.2rem; left: 50%; transform: translateX(-50%); color: #fff; font-size: .85rem; background: rgba(0,0,0,.4); padding: .2rem .7rem; border-radius: 999px; }
+
+/* ===== フッター ===== */
+.foot { text-align: center; padding: 1.6rem 1rem; background: var(--ai); color: #cdd6de; font-size: .8rem; }
+.foot p { margin: .2rem 0; }
+.foot .muted { color: #95a3af; }
+
+/* ===== レスポンシブ ===== */
+@media (min-width: 640px) {
+  .cards { grid-template-columns: 1fr 1fr; }
+  .branch-grid { grid-template-columns: 1fr 1fr; }
+  .hero-title { font-size: 2.9rem; }
+}
+@media (min-width: 920px) {
+  .cards { grid-template-columns: 1fr 1fr 1fr; }
+}
+
+/* 写真クレジット（フッター内・折りたたみ） */
+.photo-credits { margin-top: .5rem; }
+.photo-credits summary { cursor: pointer; }
+.photo-credits p { margin-top: .35rem; line-height: 1.6; font-size: .8rem; word-break: break-word; }
+
+/* 天気タブ: 旅行5日ぶんの分岐アドバイス */
+.wx-advice { margin: .5rem 0; font-size: .88rem; line-height: 1.65; }
+.wx-advice + .wx-advice { border-top: 1px dashed var(--line); padding-top: .5rem; }
+
+/* =========================================================================
+   特集（読み物）
+   ========================================================================= */
+.feature-section { margin: 0 0 1.6rem; }
+.feature-section-h {
+  margin: 0 0 .4rem; font-size: 1.12rem; color: var(--ai);
+  display: flex; align-items: center; gap: .45rem;
+}
+.feature-section-h::before {
+  content: ""; width: .95em; height: .95em; flex: none;
+  background: url(images/emblem.svg) center/contain no-repeat; opacity: .85;
+}
+.feature-section.top .feature-section-h { color: var(--shu); }
+.feature-section-lead p { margin: 0 0 .8rem; font-size: .9rem; color: #4d473d; line-height: 1.75; }
+.feature-note { margin-bottom: 1.6rem; }
+.feature-note p { margin: 0 0 .6rem; line-height: 1.8; }
+.feature-note p:last-child { margin-bottom: 0; }
+
+/* 1件ぶんのおすすめ: 写真＋本文の横並び（狭い画面では縦積み） */
+.feature-picks { display: grid; gap: .8rem; }
+.feature-pick {
+  display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: .9rem;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: .8rem; box-shadow: var(--shadow);
+}
+.feature-section.top .feature-pick { border-left: 4px solid var(--shu); }
+.feature-pick-img {
+  padding: 0; border: none; background: none; cursor: zoom-in;
+  border-radius: 10px; overflow: hidden; align-self: start;
+}
+.feature-pick-img img { display: block; width: 100%; height: 132px; object-fit: cover; }
+.feature-pick-body { min-width: 0; }
+.feature-pick-head { display: flex; flex-wrap: wrap; gap: .3rem; align-items: center; margin-bottom: .25rem; }
+.feature-pick-tag {
+  font-size: .72rem; font-weight: 700; padding: .12rem .55rem; border-radius: 999px;
+  background: var(--shu); color: #fff; white-space: nowrap;
+}
+.feature-pick-name { margin: 0 0 .35rem; font-size: 1rem; color: var(--ai); }
+.feature-pick-why { margin: 0 0 .5rem; font-size: .88rem; line-height: 1.75; color: #4d473d; }
+.feature-pick-meta { list-style: none; margin: 0 0 .5rem; padding: 0; font-size: .8rem; }
+.feature-pick-meta li { display: grid; grid-template-columns: 3em minmax(0, 1fr); gap: .5rem; padding: .12rem 0; }
+.feature-pick-meta b { color: var(--ai); font-weight: 700; }
+.feature-pick-meta span { color: #5c554a; }
+
+/* 犬の条件チップ（絞り込みの4区分と同じ語彙・同じ並び） */
+.feature-chip {
+  font-size: .72rem; font-weight: 700; padding: .12rem .55rem;
+  border-radius: 999px; white-space: nowrap; border: 1px solid transparent;
+}
+.feature-chip.area-indoor  { background: #dfeee4; color: #1f6b43; border-color: #bcdcc7; }
+.feature-chip.area-outdoor { background: #eaf1dc; color: #55701f; border-color: #d3e2b8; }
+.feature-chip.area-carry   { background: #f3e8d6; color: #8a6420; border-color: #e3d0ae; }
+.feature-chip.area-ng      { background: #f7e0dc; color: #a33a25; border-color: #eec4bc; }
+
+/* 日別のおすすめ・電話文例 */
+.feature-list { margin: 0; padding: 0; }
+.feature-list dt {
+  font-weight: 700; color: var(--ai); font-size: .9rem;
+  margin-top: .7rem; padding-top: .7rem; border-top: 1px dashed var(--line);
+}
+.feature-list dt:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+.feature-list dd { margin: .2rem 0 0; font-size: .88rem; line-height: 1.75; color: #4d473d; }
+
+.feature-sources { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .35rem; }
+.feature-sources a { font-size: .86rem; }
+
+@media (max-width: 560px) {
+  .feature-pick { grid-template-columns: 1fr; gap: .6rem; }
+  .feature-pick-img img { height: 160px; }
+}
+
+/* =========================================================================
+   一覧表（各タブのカードの上に置く折りたたみ式の索引）
+   ========================================================================= */
+.card-table { margin: 0 0 1rem; }
+.ct-details {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.ct-summary {
+  cursor: pointer; list-style: none;
+  display: flex; align-items: center; gap: .5rem;
+  padding: .5rem .7rem; background: var(--kinari-2);
+  font-size: .82rem; font-weight: 700; color: var(--ai);
+}
+.ct-summary::-webkit-details-marker { display: none; }
+.ct-summary::before {
+  content: "▶"; font-size: .7em; color: var(--muted);
+  transition: transform .15s; display: inline-block;
+}
+.ct-details[open] .ct-summary::before { transform: rotate(90deg); }
+.ct-details[open] .ct-summary { border-bottom: 1px solid var(--line); }
+.ct-n {
+  margin-left: auto; font-size: .74rem; font-weight: 700; color: var(--muted);
+  background: var(--card); border-radius: 999px; padding: .05em .55em;
+}
+/* 列は3つなのでスマホ幅でも収まるが、念のためはみ出しはこの中で吸収する */
+.ct-wrap { overflow-x: auto; }
+.ct { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.ct th {
+  text-align: left; font-weight: 700; color: var(--muted); font-size: .72rem;
+  padding: .4rem .6rem; border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.ct td { padding: .45rem .6rem; border-bottom: 1px solid var(--kinari-2); vertical-align: middle; }
+.ct tbody tr:last-child td { border-bottom: none; }
+.ct-row { cursor: pointer; }
+.ct-row:hover td { background: var(--kinari); }
+.ct-row:focus-visible { outline: 2px solid var(--ai-2); outline-offset: -2px; }
+.ct-name { font-weight: 600; color: var(--sumi); min-width: 9em; }
+.ct-area { white-space: nowrap; }
+.ct-area .feature-chip { font-size: .68rem; padding: .1rem .45rem; }
+.ct-score { white-space: nowrap; font-weight: 700; color: var(--ai); }
+.ct-tabelog { color: #b3541e; }
+.ct-google { color: var(--ai); }
+@media (max-width: 520px) {
+  .ct { font-size: .78rem; }
+  .ct th, .ct td { padding: .4rem .45rem; }
+  .ct-name { min-width: 0; }
+}
+
+/* ===== 行きたい度（★5段階）＝2人で共有する ===== */
+.want-row {
+  display: flex; align-items: center; gap: .1rem; flex-wrap: wrap;
+  margin: .3rem 0 .1rem;
+}
+.want-label {
+  font-size: .74rem; color: var(--muted); font-weight: 600;
+  margin-right: .35rem; letter-spacing: .04em;
+}
+.want-star {
+  border: none; background: none; cursor: pointer; padding: .1rem .12rem;
+  font-size: 1.16rem; line-height: 1; color: var(--line);
+  transition: transform .12s, color .12s;
+}
+.want-star:hover { transform: scale(1.18); }
+.want-star:active { transform: scale(.94); }
+.want-star.on { color: var(--gold); }
+.want-star:focus-visible { outline: 2px solid var(--ai-2); outline-offset: 1px; border-radius: 4px; }
+.want-clear {
+  border: none; background: none; cursor: pointer; color: var(--muted);
+  font-size: .82rem; padding: .1rem .3rem; margin-left: .2rem; border-radius: 6px;
+}
+.want-clear:hover { background: var(--kinari-2); color: var(--sumi); }
+
+/* ===== メモ（カードごと・2人で共有する） ===== */
+.note-box { margin: .5rem 0 .2rem; }
+.note-box > summary {
+  cursor: pointer; list-style: none; font-size: .8rem; font-weight: 600;
+  color: var(--ai); padding: .3rem .5rem; border-radius: 8px;
+  background: var(--kinari); display: inline-flex; align-items: center; gap: .3rem;
+}
+.note-box > summary::-webkit-details-marker { display: none; }
+.note-box > summary:hover { background: var(--kinari-2); }
+.note-dot { color: var(--shu); font-size: .7rem; }
+.note-input {
+  width: 100%; min-height: 4.4rem; margin-top: .4rem; padding: .5rem .6rem;
+  border: 1px solid var(--line); border-radius: 8px; background: #fff;
+  font: inherit; font-size: .85rem; line-height: 1.6; color: var(--sumi);
+  resize: vertical; box-sizing: border-box;
+}
+.note-input:focus { outline: 2px solid var(--ai-2); outline-offset: -1px; border-color: var(--ai-2); }
+
+/* 一覧表の★列と、比較表の見出しタグ */
+.ct-want { white-space: nowrap; }
+.ct-star { color: var(--gold); letter-spacing: -.06em; }
+.ct-tag {
+  display: block; font-size: .68rem; font-weight: 600; color: var(--shu);
+  margin-top: .12rem; white-space: nowrap;
+}
+
+/* ===== スケジュール行の 🎫 ===== */
+.tl-ticket {
+  display: inline-block; margin-left: .35rem; text-decoration: none;
+  font-size: .9rem; line-height: 1; vertical-align: middle;
+  padding: .1rem .18rem; border-radius: 6px; background: var(--kinari-2);
+}
+.tl-ticket:hover { background: var(--gold); }
+
+/* ===== チケット・予約タブ ===== */
+.ticket-notice { margin-bottom: 1rem; }
+.ticket-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: .9rem 1rem 1rem; margin: 0 0 1rem;
+  /* ★固定タブの下に潜らないように。カードと同じ理由（追補L-2） */
+  scroll-margin-top: 64px;
+}
+.ticket-card.just-jumped { animation: card-jump 1.6s ease-out; }
+@media (prefers-reduced-motion: reduce) { .ticket-card.just-jumped { animation: none; } }
+.ticket-head { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .3rem; }
+.ticket-icon { font-size: 1.35rem; line-height: 1; }
+.ticket-title { margin: 0; font-size: 1.04rem; color: var(--ai); flex: 1 1 auto; }
+.ticket-when {
+  font-size: .74rem; font-weight: 700; color: #fff; background: var(--ai-2);
+  padding: .16rem .5rem; border-radius: 999px; white-space: nowrap;
+}
+.ticket-summary { margin: .3rem 0 .6rem; font-size: .9rem; }
+.ticket-files { margin: .7rem 0 .2rem; display: grid; gap: .6rem; }
+.ticket-file { display: flex; gap: .7rem; align-items: flex-start; }
+.ticket-shot {
+  border: 1px solid var(--line); border-radius: 10px; padding: 0; cursor: zoom-in;
+  background: var(--kinari); overflow: hidden; flex: 0 0 108px; line-height: 0;
+}
+.ticket-shot img { width: 108px; height: 108px; object-fit: cover; display: block; }
+.ticket-file-links { display: flex; flex-direction: column; gap: .35rem; align-items: flex-start; }
+.ticket-file-label { font-size: .8rem; font-weight: 600; color: var(--sumi); }
+
+/* 予約メールの原本（開いたときにブラウザ側でデコードして表示する） */
+.eml > summary {
+  cursor: pointer; list-style: none; font-size: .82rem; font-weight: 600;
+  color: var(--ai); padding: .35rem .6rem; border-radius: 8px; background: var(--kinari);
+  display: inline-block;
+}
+.eml > summary::-webkit-details-marker { display: none; }
+.eml > summary:hover { background: var(--kinari-2); }
+.eml-body {
+  white-space: pre-wrap; word-break: break-word; margin: .5rem 0;
+  padding: .7rem .8rem; background: var(--kinari); border: 1px solid var(--line);
+  border-radius: 8px; font-size: .76rem; line-height: 1.7; color: var(--sumi);
+  max-height: 26rem; overflow-y: auto;
+}
+
+@media (max-width: 520px) {
+  .ticket-shot, .ticket-shot img { flex-basis: 88px; width: 88px; height: 88px; }
+  .want-star { font-size: 1.28rem; padding: .16rem .16rem; }  /* 指で押しやすく */
+}
+
+/* Keep edit entry points discoverable; activating them points to Google sign-in. */
+button[data-shared-edit][aria-disabled="true"] { opacity: .6; }
+textarea[data-shared-edit][readonly] { background: var(--kinari); cursor: text; }
+
+/* ===== 地図とカードの比較（4タブ共通） ===== */
+.browse-controls, .browse-map-actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.browse-controls { margin-bottom: .8rem; }
+.browse-layout [hidden], .browse-controls [hidden] { display: none !important; }
+.browse-layout { min-width: 0; margin-bottom: 1rem; }
+.browse-layout.is-open { display: grid; grid-template-columns: minmax(280px, 3fr) 16px minmax(280px, 2fr); align-items: start; }
+.browse-map-pane, .browse-cards, .browse-map-slot { min-width: 0; }
+.browse-layout.is-open .browse-map-pane { height: var(--browse-height, 560px); display: flex; flex-direction: column; background: var(--kinari); }
+.browse-map-actions { padding: 0 0 .5rem; }
+.browse-map-actions .browse-close { margin-left: auto; }
+.browse-map-message:empty { display: none; }
+.browse-map-message { font-size: .82rem; padding: .4rem; }
+.browse-layout.is-open .browse-map-slot { flex: 1; min-height: 0; }
+.browse-layout.is-open .browse-map-slot > #map-dock,
+.browse-layout.is-open #map-dock-home, .browse-layout.is-open #map-dock-home > #map-dock { height: 100%; }
+.browse-layout.is-open #map { height: 100%; min-height: 0; margin: 0; }
+/* 既存の操作欄を共用し、カテゴリでは絞り込みを隠して表示切替だけを残す。 */
+#map-dock.in-browse-category { display: flex; flex-direction: column; }
+#map-dock.in-browse-category .map-filters { flex: none; margin-bottom: .5rem; }
+#map-dock.in-browse-category .map-filters .tools-head,
+#map-dock.in-browse-category .filter-group:not([data-group="pinlabel"]) { display: none; }
+#map-dock.in-browse-category .filter-group[data-group="pinlabel"] { grid-template-columns: minmax(0, 1fr); border-top: 0; }
+#map-dock.in-browse-category .filter-label { padding: .3rem .6rem; border-right: 0; border-bottom: 1px solid var(--line); }
+#map-dock.in-browse-category #map { flex: 1; height: 0; }
+.browse-layout.is-open .browse-cards { overflow-anchor: none; height: var(--browse-height, 560px); overflow-y: auto; scrollbar-gutter: stable; padding: 4px 6px 4px 4px; }
+.browse-layout.is-open .cards { grid-template-columns: minmax(0, 1fr); align-content: start; }
+.browse-layout.is-open .card { min-width: 0; overflow-wrap: anywhere; }
+.browse-splitter { height: var(--browse-height, 560px); width: 16px; position: relative; cursor: col-resize; touch-action: none; }
+.browse-splitter::after { content: ""; position: absolute; inset: 35% 5px; border-radius: 6px; background: #b6ae9e; }
+.browse-splitter:hover::after, .browse-splitter:focus-visible::after { background: var(--cyan); }
+.browse-splitter:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; border-radius: 6px; }
+.browse-resizing, .browse-resizing * { cursor: col-resize !important; user-select: none !important; }
+.browse-locate { display: none; }
+.browse-layout.is-open .browse-locate { display: inline-flex; align-self: flex-start; margin-top: .5rem; }
+.browse-layout.is-open .card.is-map-selected { box-shadow: 0 0 0 3px var(--cyan), var(--shadow); }
+.browse-layout.is-open .card:has(.browse-locate:focus-visible) { outline: 2px solid var(--cyan); }
+@media (min-width: 1080px) {
+  .browse-layout.is-open { --browse-width: min(1900px, calc(100vw - 3rem)); width: var(--browse-width); margin-left: calc((100% - var(--browse-width)) / 2); }
+}
+.browse-layout.is-open[data-layout="phone"] { display: block; }
+.browse-layout.is-open[data-layout="phone"] .browse-map-pane { position: sticky; top: var(--browse-tabs-height, 52px); z-index: 20; height: auto; padding-top: .4rem; margin-bottom: 1rem; }
+.browse-layout.is-open[data-layout="phone"].no-sticky .browse-map-pane { position: static; }
+.browse-layout.is-open[data-layout="phone"] .browse-map-slot { flex: none; }
+.browse-layout.is-open[data-layout="phone"] #map { height: 240px; }
+.browse-layout.is-open[data-layout="phone"] #map-dock.in-browse-category { height: auto; }
+.browse-layout.is-open[data-layout="phone"] #map-dock.in-browse-category #map { flex: none; height: 240px; }
+.browse-layout.is-open[data-layout="phone"] #map-dock.in-browse-category .chip { min-height: 44px; }
+.browse-layout.is-open[data-layout="phone"] .browse-cards { height: auto; overflow: visible; scrollbar-gutter: auto; padding: 4px; }
+.browse-layout.is-open[data-layout="phone"] .browse-map-actions .btn-ghost,
+.browse-layout.is-open[data-layout="phone"] .browse-locate,
+.browse-layout.is-open[data-layout="phone"] [data-add-sched] { min-height: 44px; }
+@media (max-width: 759px) { .browse-controls .btn-ghost { min-height: 44px; } }
+/* Leaflet自身のtransformは変更しない。重なり順はsetZIndexOffsetで制御する。 */
+#map-dock.in-browse-category .pin, .browse-layout.is-open .pin { cursor: pointer; }
+.browse-layout.is-open[data-layout="phone"] .leaflet-popup-content { max-height: 150px; overflow-y: auto; }
+/* 遅延画像の読み込み前から比率を確保し、ピンから移動したカードの位置をずらさない。 */
+.browse-layout .card-img-btn { display: block; width: 100%; padding: 0; border: 0; background: transparent; }
+
+/* ===== 合言葉の扉 =====
+   解錠するまで中身は復号されない。ここに旅行先が分かる文言・画像を足さないこと（§6）。 */
+body.locked { overflow: hidden; }
+body.locked > *:not(#gate) { display: none !important; }
+#gate {
+  position: fixed; inset: 0; z-index: 3000; display: grid; place-items: center;
+  padding: 1.2rem;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(31,110,156,.55) 0%, rgba(18,63,99,0) 60%),
+    linear-gradient(165deg, #123f63 0%, #0e304c 52%, #26201e 100%);
+  color: var(--kinari, #f6f1e6);
+}
+#gate[hidden] { display: none; }
+.gate-box { width: min(22rem, 100%); text-align: center; }
+.gate-emblem { opacity: .9; margin-bottom: .6rem; }
+.gate-title { font-size: 1.15rem; margin: 0 0 .3rem; font-weight: 700; }
+.gate-lead { font-size: .85rem; opacity: .85; margin: 0 0 1.1rem; line-height: 1.7; }
+#gate-form { display: grid; gap: .6rem; }
+#gate-form[hidden] { display: none; }
+/* パスワード管理アプリ向けの隠し入力。目には見せない */
+.gate-user { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+#gate-pass {
+  font: inherit; font-size: 1rem; padding: .7rem .8rem; border-radius: 9px;
+  border: 1px solid rgba(246,241,230,.35); background: rgba(255,255,255,.08); color: inherit;
+}
+#gate-pass::placeholder { color: rgba(246,241,230,.5); }
+.gate-remember { font-size: .82rem; display: flex; align-items: center; gap: .4rem; justify-content: center; opacity: .9; }
+#gate-submit {
+  font: inherit; font-weight: 700; padding: .7rem; border-radius: 9px; border: none;
+  background: var(--shu, #d9542f); color: #fff; cursor: pointer;
+}
+#gate-submit[disabled] { opacity: .6; cursor: progress; }
+.gate-msg { min-height: 1.4em; font-size: .85rem; margin: .7rem 0 0; }
+.gate-msg.error { color: #ffb9ab; font-weight: 700; }
+.gate-foot { font-size: .72rem; opacity: .72; line-height: 1.7; margin: 1.4rem 0 0; }
+.gate-forget { font: inherit; font-size: .72rem; color: inherit; background: none; border: none; text-decoration: underline; cursor: pointer; padding: 0; }
+
+/* 復号待ちの画像。高さが潰れてレイアウトが飛ばないよう、下地だけ出す */
+img[data-enc]:not([src]) { background: rgba(0,0,0,.06); min-height: 2rem; }
+#lb-img.is-loading { opacity: .35; }

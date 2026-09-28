@@ -1,0 +1,35 @@
+# ===== macOS =====
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# ===== iCloud Drive =====
+*.icloud
+.iCloud*
+
+# ===== エディタ =====
+.vscode/
+.idea/
+*.swp
+*~
+
+# ===== 一時ファイル =====
+*.tmp
+tmp.*
+
+# ===== 非公開メモ（repoに入れない） =====
+# 予約番号・個人情報・詳細住所・私的メモはこのフォルダ/拡張子に置く
+private/
+secrets/
+*.local.md
+*.private.md
+NOTES.local.md
+
+# 予約原本は公開しない（既に追跡済みのファイルは別途削除が必要）
+attachments/
+*.eml
+*.docx

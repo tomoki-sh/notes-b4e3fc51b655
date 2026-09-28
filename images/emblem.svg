@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 116">
+  <!-- 伊勢志摩テーマの意匠：アコヤ貝 × 真珠 × 海
+       クラス名 .hero-emblem・ファイル名 emblem.svg はテーマ非依存。
+       次の旅行ではこのファイルだけ差し替える -->
+
+  <!-- 上の殻（開いた蓋）。扇形＋放射状の筋で貝と分かるようにする -->
+  <path d="M21 50 C24 38 32 28 40 25 C45 23 55 23 60 25 C68 28 76 38 79 50 Z"
+        fill="#f4f1ea" stroke="#123f63" stroke-width="3" stroke-linejoin="round"/>
+  <g stroke="#123f63" stroke-width="1.5" stroke-linecap="round" opacity=".3" fill="none">
+    <path d="M50 50 L30 40"/><path d="M50 50 L39 30"/>
+    <path d="M50 50 L50 25"/>
+    <path d="M50 50 L61 30"/><path d="M50 50 L70 40"/>
+  </g>
+
+  <!-- 下の殻（真珠を受ける身）。上の殻とのあいだを開けて「開いている」ことを見せる -->
+  <path d="M21 64 C24 76 32 86 40 89 C45 91 55 91 60 89 C68 86 76 76 79 64 Z"
+        fill="#f4f1ea" stroke="#123f63" stroke-width="3" stroke-linejoin="round"/>
+  <g stroke="#123f63" stroke-width="1.5" stroke-linecap="round" opacity=".3" fill="none">
+    <path d="M50 64 L30 74"/><path d="M50 64 L39 84"/>
+    <path d="M50 64 L50 89"/>
+    <path d="M50 64 L61 84"/><path d="M50 64 L70 74"/>
+  </g>
+
+  <!-- 真珠（いちばん手前。開いた殻のあいだに丸ごと見える） -->
+  <circle cx="50" cy="57" r="9.5" fill="#fffdf8" stroke="#b99a5f" stroke-width="1.6"/>
+  <circle cx="46.3" cy="53.3" r="3" fill="#ffffff" opacity=".92"/>
+
+  <!-- 水面 -->
+  <path d="M12 98 q9.5 -4.5 19 0 t19 0 t19 0 t19 0"
+        fill="none" stroke="#123f63" stroke-width="3" stroke-linecap="round"/>
+  <path d="M17 106 q8.25 -4 16.5 0 t16.5 0 t16.5 0"
+        fill="none" stroke="#2a6191" stroke-width="2.6" stroke-linecap="round" opacity=".75"/>
+  <path d="M25 113 q8.25 -3.5 16.5 0 t16.5 0"
+        fill="none" stroke="#4b93a8" stroke-width="2.2" stroke-linecap="round" opacity=".55"/>
+</svg>

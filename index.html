@@ -1,0 +1,250 @@
+<!DOCTYPE html><html lang="ja"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 検索エンジンに載せない（URL推測困難方式） -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#123f63">
+  <link rel="icon" type="image/svg+xml" href="images/emblem.svg">
+  <title>共有メモ</title>
+
+  <!-- Leaflet (地図) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <!-- 和フォント -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&amp;family=Zen+Kaku+Gothic+New:wght@400;500;700&amp;display=swap" rel="stylesheet">
+
+  <!-- ★ ?v= はキャッシュ対策。GitHub Pages は index.html / app.js / style.css を
+       それぞれ独立に10分キャッシュ（max-age=600）するため、これが無いと
+       「新しい index.html ＋ 古い app.js」の組み合わせが起き、
+       タブは増えているのに中身が空、という状態になる。
+       ★公開準備コマンドが全ローカルJS/CSSの内容から自動更新する。手で数字を変更しない。 -->
+  <link rel="stylesheet" href="style.css?v=dc238ef9aedb">
+</head>
+<body class="locked">
+  <!-- 合言葉の扉。ここから下の中身は enc/ の暗号文で、解錠するまで復号されない -->
+  <div id="gate">
+    <div class="gate-box">
+      <img class="gate-emblem" src="images/emblem.svg" alt="" width="64" height="74">
+      <h1 class="gate-title">合言葉を入れてください</h1>
+      <p class="gate-lead">この記録は、合言葉を知っている人だけが開けます。</p>
+      <form id="gate-form" hidden="" autocomplete="on">
+        <!-- パスワード管理アプリに拾わせるための隠し入力（§5-4） -->
+        <input class="gate-user" type="text" name="username" autocomplete="username" value="shared" tabindex="-1" aria-hidden="true">
+        <input id="gate-pass" type="password" name="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="合言葉" aria-label="合言葉" required="">
+        <label class="gate-remember"><input id="gate-remember" type="checkbox" checked=""> この端末で覚える</label>
+        <button id="gate-submit" type="submit">開く</button>
+      </form>
+      <p id="gate-msg" class="gate-msg" role="status" aria-live="polite"></p>
+      <p class="gate-foot">
+        覚えた端末は次回から合言葉なしで開きます（鍵は取り出せない形でこの端末にだけ保存され、合言葉そのものは保存しません）。
+        しばらく開かないと端末側で消えることがあり、その場合は再入力が必要です。
+        <button type="button" id="forget-device" class="gate-forget">この端末の記憶を消す</button>
+      </p>
+    </div>
+  </div>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <img class="hero-emblem" src="images/emblem.svg" alt="" width="72" height="84">
+      <p class="hero-kicker"></p>
+      <h1 class="hero-title"></h1>
+      <p class="hero-sub"></p>
+      <p class="hero-note"></p>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs" aria-label="セクション切替">
+    <button class="tab active" data-tab="schedule"></button>
+    <button class="tab" data-tab="tickets"></button>
+    <button class="tab" data-tab="map"></button>
+    <button class="tab" data-tab="feature"></button>
+    <button class="tab" data-tab="feature2"></button>
+    <button class="tab" data-tab="spots"></button>
+    <button class="tab" data-tab="restaurants"></button>
+    <button class="tab" data-tab="cafes"></button>
+    <button class="tab" data-tab="routes"></button>
+    <button class="tab" data-tab="packing"></button>
+    <button class="tab" data-tab="weather"></button>
+    <button class="tab" data-tab="info"></button>
+  </nav>
+
+  <main class="container">
+    <aside id="sync-status" class="sync-status" aria-label="共有の状態" data-state="connecting">
+      <span id="sync-message" role="status" aria-live="polite">共有に接続中…</span>
+      <button id="auth-sign-in" type="button" hidden="">Googleでログイン（初回のみ）</button>
+      <button id="auth-sign-out" type="button" hidden="">ログアウト</button>
+      <button id="sync-retry" type="button" hidden="">再試行</button>
+      <button id="sync-use-local" data-shared-edit="" type="button" hidden="">この端末の変更を共有する</button>
+      <button id="sync-use-remote" data-shared-edit="" type="button" hidden="">共有側の内容を使う</button>
+    </aside>
+    <!-- スケジュール -->
+    <section class="panel active" id="panel-schedule">
+      <h2 class="panel-title"></h2>
+      <p class="panel-lead"></p>
+
+      <!-- 本命プラン（読む形式）。中身は app.js の renderMasterPlan() が schedule から描く -->
+      <div id="master-plan"></div>
+
+      <!-- 編集セクション。★編集モードでないときは DOM ごと描かない（誤タップ防止）。
+           中身は app.js の renderSchedEditorSection() が組み立てる -->
+      <div id="sched-editor-host"></div>
+
+      <!-- 予備プラン（本命から書き出した控え。ユーザー間で同期する） -->
+      <div id="backup-plans"></div>
+
+      <h3 class="sched-subhead">当日の調整方針</h3>
+      <div id="schedule-content"></div>
+    </section>
+
+    <!-- チケット・予約（中身は app.js の DATA.tickets が描画） -->
+    <section class="panel" id="panel-tickets">
+      <h2 class="panel-title"></h2>
+      <p class="panel-lead"></p>
+      <div class="info-card warn ticket-notice">
+        <h3>🎫 予約原本は手元のメール・公式サイトで確認</h3>
+        <p>このページは予約概要です。<strong>氏名・予約番号・券番号と原本は掲載していません。</strong>乗車・受付には、手元の予約メールまたは公式サイトの券面を用意してください。旅程を含むため、URLの共有範囲にも注意してください。</p>
+      </div>
+      <div id="tickets-content"></div>
+    </section>
+
+    <!-- マップ -->
+    <section class="panel" id="panel-map">
+      <h2 class="panel-title"></h2>
+      <p class="panel-lead"></p>
+      <!-- ★#map-dock は「地図とそのフィルタ」をひとまとめにした引っ越し単位。
+           スケジュールの編集モード、または各カードタブで地図を開くとそちらへ移る。
+           家はこの #map-dock-home で、置き場所を決めるのは app.js の syncMapDock() だけ。
+           ・1ノードにまとめてあるので、引っ越しで動かすのは常に1回の appendChild で済む
+           ・比較表示中のマップタブではフィルタを比較エリア上部へ移す。結線と選択値は維持する
+           中身は app.js の renderMapFilters() が MAP_FILTER_COLUMNS から描く。ここには何も書かない -->
+      <div id="map-dock-home">
+        <div id="map-dock">
+          <div class="map-filters" id="map-filters"></div>
+          <div id="map"></div>
+        </div>
+      </div>
+
+      <!-- 回る順番。★閲覧専用。並べ替え・追加・削除の手段は置かない
+           （スケジュールから自動で作られる導出値なので、ここで編集させると黙って消える） -->
+      <div class="route-editor">
+        <div class="route-editor-head">
+          <h3>回る順番</h3>
+          <div class="route-actions">
+            <a class="btn-ghost btn-gmaps" id="route-gmaps" target="_blank" rel="noopener">🗺 Googleマップでルートを開く</a>
+          </div>
+        </div>
+        <p class="route-note muted">スケジュールの<strong>本命プラン</strong>で地点に紐づけた予定が、上から順に並びます。順番を変えるときは<strong>スケジュールタブ</strong>で予定を並べ替えてください。</p>
+        <ol class="route-list" id="route-list"></ol>
+      </div>
+    </section>
+
+    <!-- 特集1（読み物。中身は app.js の DATA.feature が描画） -->
+    <section class="panel" id="panel-feature">
+      <h2 class="panel-title"></h2>
+      <p class="panel-lead"></p>
+      <div id="feature-content"></div>
+    </section>
+
+    <!-- 特集2（読み物。中身は app.js の DATA.feature2 が描画） -->
+    <section class="panel" id="panel-feature2">
+      <h2 class="panel-title"></h2>
+      <p class="panel-lead"></p>
+      <div id="feature2-content"></div>
+    </section>
+
+    <!-- スポット -->
+    <section class="panel" id="panel-spots">
+      <h2 class="panel-title"></h2>
+      <p class="panel-lead"></p>
+      <div class="card-tools" id="tools-spots"></div>
+      <!-- 折りたたみ式の一覧表。中身は app.js の renderCardTable() が描画 -->
+      <div class="card-table" id="table-spots"></div>
+      <div class="cards" id="cards-spots"></div>
+    </section>
+
+    <!-- レストラン -->
+    <section class="panel" id="panel-restaurants">
+      <h2 class="panel-title"></h2>
+      <p class="panel-lead"></p>
+      <div class="card-tools" id="tools-restaurants"></div>
+      <!-- 折りたたみ式の一覧表。中身は app.js の renderCardTable() が描画 -->
+      <div class="card-table" id="table-restaurants"></div>
+      <div class="cards" id="cards-restaurants"></div>
+    </section>
+
+    <!-- カフェ -->
+    <section class="panel" id="panel-cafes">
+      <h2 class="panel-title"></h2>
+      <p class="panel-lead"></p>
+      <div class="card-tools" id="tools-cafes"></div>
+      <!-- 折りたたみ式の一覧表。中身は app.js の renderCardTable() が描画 -->
+      <div class="card-table" id="table-cafes"></div>
+      <div class="cards" id="cards-cafes"></div>
+    </section>
+
+    <!-- ルート -->
+    <section class="panel" id="panel-routes">
+      <h2 class="panel-title"></h2>
+      <p class="panel-lead"></p>
+      <div id="routes-content"></div>
+    </section>
+
+    <!-- 持ち物 -->
+    <section class="panel" id="panel-packing">
+      <h2 class="panel-title"></h2>
+      <p class="panel-lead"></p>
+      <div id="packing-content"></div>
+    </section>
+
+    <!-- 天気 -->
+    <section class="panel" id="panel-weather">
+      <h2 class="panel-title"></h2>
+      <p class="panel-lead"></p>
+      <div id="weather-content" class="weather-grid"><p class="muted">読み込み中…</p></div>
+      <div id="weather-alert" class="weather-alert"></div>
+    </section>
+
+    <!-- 注意 -->
+    <section class="panel" id="panel-info">
+      <h2 class="panel-title"></h2>
+      <p class="panel-lead"></p>
+      <div class="info-toolbar">
+        <button class="btn-ghost" id="info-edit-toggle" data-shared-edit="">✏️ 編集する</button>
+        <span class="edit-only">
+          <button class="btn-ghost" id="info-add" data-shared-edit="">＋ 項目を追加</button>
+          <button class="btn-ghost" id="info-reset" data-shared-edit="">初期状態に戻す</button>
+          <button class="btn-ghost" id="info-export">共有用に書き出す</button>
+        </span>
+      </div>
+      <div id="info-content"></div>
+    </section>
+  </main>
+
+  <!-- ライトボックス -->
+  <div id="lightbox" class="lightbox hidden" aria-hidden="true">
+    <button class="lb-close" id="lb-close" aria-label="閉じる">✕</button>
+    <button class="lb-prev" id="lb-prev" aria-label="前へ">‹</button>
+    <img class="lb-img" id="lb-img" alt="">
+    <button class="lb-next" id="lb-next" aria-label="次へ">›</button>
+    <div class="lb-counter" id="lb-counter"></div>
+  </div>
+
+  <footer class="foot">
+    <p></p>
+    <p class="foot-warn"></p>
+    <p class="muted"></p>
+    <details class="photo-credits"></details>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js" defer=""></script>
+  <script src="crypto.js?v=dc238ef9aedb" defer=""></script>
+  <script src="app.js?v=dc238ef9aedb" defer=""></script>
+
+  <!-- ★Firebase は外してある。この公開版は「終わった旅行の記録」で読み取り専用なので、
+       同期する相手がいない。外部接続を持たないぶん、解錠前に中身が漏れる経路も無い。
+       同期を復活させるなら app.js の READ_ONLY と合わせて戻すこと。 -->
+
+
+</body></html>
